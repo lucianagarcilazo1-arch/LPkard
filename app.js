@@ -455,7 +455,13 @@ $("appointments-list").addEventListener("click", event => {
   }
 
   const message =
-    `Hola, ${client.name}. Te recordamos que hoy tenés tu turno en ${data.business} para ${appointment.service}, a las ${appointment.time}. ¡Te esperamos!`;
+    `¡Hola, buen día ${client.name}! 👋
+
+Te recordamos tu cita de ${appointment.service} para hoy a las ${appointment.time} en ${data.business}.
+
+💬 Respondé SÍ para confirmar o avisanos si necesitás cambiarla.
+
+¡Te esperamos! 😊`;
 
   const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 
