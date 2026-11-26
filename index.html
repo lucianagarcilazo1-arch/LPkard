@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Prototipo local de gestión comercial">
+  <title>Mi Sistema Comercial</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">PLATAFORMA DE GESTIÓN</p>
+        <h1 id="business-title">Mi negocio</h1>
+      </div>
+      <button class="secondary small" id="edit-business">Configurar negocio</button>
+    </header>
+
+    <main>
+      <section class="welcome">
+        <div>
+          <p class="eyebrow">PANEL GENERAL</p>
+          <h2>Todo en un solo lugar.</h2>
+          <p class="muted">Administrá clientes, fidelización y turnos de tu negocio.</p>
+        </div>
+        <div class="today" id="today-label"></div>
+      </section>
+
+      <section class="stats-grid" aria-label="Resumen">
+        <article class="stat-card"><span class="stat-icon">♙</span><p>Clientes</p><strong id="stat-clients">0</strong><small>Registrados</small></article>
+        <article class="stat-card"><span class="stat-icon">✧</span><p>Puntos acumulados</p><strong id="stat-points">0</strong><small>Entre todos los clientes</small></article>
+        <article class="stat-card"><span class="stat-icon">▦</span><p>Turnos</p><strong id="stat-appointments">0</strong><small>Registrados</small></article>
+      </section>
+
+      <nav class="module-grid" aria-label="Módulos">
+        <button class="module-card active" data-view="clients"><span class="module-icon">♙</span><span><b>Clientes</b><small>Altas, búsquedas y fichas</small></span><span class="arrow">→</span></button>
+        <button class="module-card" data-view="loyalty"><span class="module-icon">✧</span><span><b>Fidelización</b><small>Puntos y recompensas</small></span><span class="arrow">→</span></button>
+        <button class="module-card" data-view="agenda"><span class="module-icon">▦</span><span><b>Agenda</b><small>Reservas y horarios</small></span><span class="arrow">→</span></button>
+      </nav>
+
+      <section class="workspace">
+        <div class="section-heading">
+          <div><p class="eyebrow" id="section-eyebrow">MÓDULO 01</p><h2 id="section-title">Clientes</h2></div>
+          <span class="local-tag">Prototipo local</span>
+        </div>
+
+        <section class="view active" id="view-clients">
+          <form id="client-form" class="form-card">
+            <h3>Registrar cliente</h3>
+            <div class="form-grid">
+              <label>Nombre y apellido<input id="client-name" required maxlength="80" placeholder="Ej. Martina López"></label>
+              <label>Teléfono <span class="optional">(opcional)</span><input id="client-phone" maxlength="30" placeholder="Ej. 3482 000000"></label>
+              <label>Correo electrónico <span class="optional">(opcional)</span><input id="client-email" type="email" maxlength="100" placeholder="nombre@correo.com"></label>
+              <button class="primary align-end" type="submit">+ Agregar cliente</button>
+            </div>
+          </form>
+          <div class="list-heading"><h3>Listado de clientes</h3><input id="client-search" class="search" placeholder="Buscar cliente..." aria-label="Buscar cliente"></div>
+          <div id="clients-list" class="data-list"></div>
+        </section>
+
+        <section class="view" id="view-loyalty">
+
+  <div class="form-card">
+    <h3>Escanear tarjeta del cliente</h3>
+    <p class="muted">
+      Escaneá el código QR de la tarjeta para identificar al cliente.
+    </p>
+    <div id="qr-reader"></div>
+    <p id="qr-scan-status" class="muted">
+      Esperando para iniciar el escáner.
+    </p>
+    <button type="button" class="primary" id="start-qr-scan">
+      Escanear QR
+    </button>
+    <button type="button" class="secondary" id="stop-qr-scan">
+      Detener cámara
+    </button>
+  </div>
+
+  <div class="form-card">
+    <h3>Registrar actividad</h3>
+    <p class="muted">
+      Seleccioná un cliente y registrá su actividad en el programa.
+    </p>
+
+    <form id="activity-form" class="inline-form">
+
+      <label>Cliente
+        <select id="activity-client" required>
+          <option value="">Seleccionar cliente</option>
+        </select>
+      </label>
+
+      <label>Tipo de actividad
+        <select id="activity-type" required>
+        </select>
+      </label>
+
+      <div id="activity-amount-container">
+        <label>Puntos a sumar
+          <input
+            id="activity-amount"
+            type="number"
+            min="1"
+            max="10000"
+            value="1"
+          >
+        </label>
+      </div>
+
+      <button class="primary align-end" type="submit">
+        Registrar actividad
+      </button>
+
+    </form>
+  </div>
+
+  <div class="form-card reward-card">
+
+    <div>
+      <p class="eyebrow">CONFIGURACIÓN DEL PROGRAMA</p>
+      <h3>Programa de fidelización</h3>
+      <p class="muted">
+        Personalizá cómo tus clientes acumulan beneficios.
+      </p>
+    </div>
+
+    <form id="loyalty-settings-form" class="inline-form">
+
+      <label>Modalidad
+        <select id="loyalty-mode">
+          <option value="points">Por puntos</option>
+          <option value="visits">Por visitas</option>
+          <option value="both">Puntos y visitas</option>
+        </select>
+      </label>
+
+      <div id="points-goal-container">
+        <label>Meta de puntos
+          <input id="points-goal" type="number" min="1" value="10">
+        </label>
+      </div>
+
+      <div id="visits-goal-container">
+        <label>Meta de visitas
+          <input id="visits-goal" type="number" min="1" value="5">
+        </label>
+      </div>
+
+      <label>Recompensa
+        <input id="loyalty-reward" type="text"
+          placeholder="Ej. Un servicio gratis">
+      </label>
+
+      <button class="primary" type="submit">
+        Guardar configuración
+      </button>
+
+    </form>
+  </div>
+
+  <h3 class="subheading">Saldos de clientes</h3>
+  <div id="loyalty-list" class="data-list"></div>
+
+</section>
+
+        <section class="view" id="view-agenda">
+          <form id="appointment-form" class="form-card">
+            <h3>Agendar turno</h3>
+            <div class="form-grid">
+              <label>Cliente<select id="appointment-client" required><option value="">Seleccionar cliente</option></select></label>
+              <label>Servicio<input id="appointment-service" required maxlength="80" placeholder="Ej. Consulta / corte"></label>
+              <label>Fecha<input id="appointment-date" type="date" required></label>
+              <label>Hora<input id="appointment-time" type="time" required></label>
+              <button class="primary align-end" type="submit">+ Guardar turno</button>
+            </div>
+          </form>
+          <h3 class="subheading">Turnos registrados</h3>
+          <div id="appointments-list" class="data-list"></div>
+        </section>
+      </section>
+      <footer>Mi Sistema Comercial · Versión de aprendizaje 0.1</footer>
+    </main>
+  </div>
+
+  <dialog id="business-dialog">
+    <form method="dialog" id="business-form">
+      <h3>Configurar negocio</h3>
+      <label>Nombre del negocio<input id="business-name" maxlength="60" placeholder="Ej. Malvi"></label>
+      <label>Color principal
+  <input type="color" id="theme-primary" value="#81566f">
+</label>
+
+<label>Color de fondo
+  <input type="color" id="theme-background" value="#fbf7fa">
+</label>
+
+<label>Color de las tarjetas
+  <input type="color" id="theme-card" value="#ffffff">
+</label>
+      <div class="dialog-actions"><button class="secondary" value="cancel">Cancelar</button><button class="primary" id="save-business" value="save">Guardar</button></div>
+    </form>
+  </dialog>
+  <dialog id="loyalty-card-dialog">
+  <div class="loyalty-card" id="loyalty-card-content">
+
+    <div class="loyalty-card-header">
+      <span>LPKARD · FIDELIZACIÓN</span>
+      <span>✦</span>
+    </div>
+
+    <h2 id="card-business-name">Mi negocio</h2>
+
+    <p class="muted">TARJETA DE BENEFICIOS</p>
+
+    <div class="loyalty-card-client">
+      <small>CLIENTE</small>
+      <h3 id="card-client-name">Nombre del cliente</h3>
+    </div>
+
+<div class="customer-qr-section">
+  <p>MI TARJETA DIGITAL</p>
+  <div id="customer-qr-code"></div>
+  <small>Presentá este código en tu comercio</small>
+</div>
+
+    <div id="card-points-section">
+  <div class="loyalty-card-points">
+    <span>Mis puntos</span>
+    <strong id="card-points">0 / 10</strong>
+  </div>
+
+  <div class="loyalty-progress">
+    <div id="card-progress"></div>
+  </div>
+</div>
+
+<div id="card-visits-section" hidden>
+  <div class="loyalty-card-points">
+    <span>Mis visitas</span>
+    <strong id="card-visits">0 / 5</strong>
+  </div>
+
+  <div class="loyalty-progress">
+    <div id="card-visits-progress"></div>
+  </div>
+</div>
+    <div class="loyalty-card-reward">
+      <small>MI RECOMPENSA</small>
+      <strong id="card-reward">Premio especial</strong>
+      <p id="card-status">Seguí acumulando puntos.</p>
+    </div>
+
+    <p class="loyalty-card-footer">
+      Tu fidelidad tiene recompensa.
+    </p>
+
+    <button type="button" class="primary" id="close-loyalty-card">
+      Cerrar tarjeta
+    </button>
+
+  </div>
+</dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode"></script>
+ <script src="app.js"></script>
+</body>
+</html>
