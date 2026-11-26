@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#81566f">
+  <title>Mi tarjeta | LPkard</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 24px 16px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: Arial, sans-serif;
+      background: #fbf7fa;
+      color: #352d38;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 390px;
+      padding: 28px;
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 8px 30px #352d3815;
+    }
+
+    .brand {
+      color: #81566f;
+      font-size: 13px;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+
+    h1 {
+      margin: 24px 0 5px;
+      font-size: 27px;
+    }
+
+    .subtitle {
+      color: #887d89;
+      font-size: 12px;
+      letter-spacing: 1px;
+    }
+
+    .client {
+      margin: 28px 0;
+      padding: 16px;
+      background: #fbf7fa;
+      border-radius: 14px;
+    }
+
+    .client small,
+    .section small {
+      color: #887d89;
+      font-size: 11px;
+    }
+
+    .client h2 {
+      margin: 7px 0 0;
+      font-size: 20px;
+    }
+
+    .section {
+      margin: 24px 0;
+    }
+
+    .value {
+      margin: 8px 0;
+      font-size: 27px;
+      font-weight: bold;
+      color: #81566f;
+    }
+
+    .progress {
+      height: 9px;
+      overflow: hidden;
+      background: #eee5ed;
+      border-radius: 20px;
+    }
+
+    .progress div {
+      height: 100%;
+      width: 0;
+      background: #81566f;
+      border-radius: 20px;
+    }
+
+    .reward {
+      padding: 16px;
+      text-align: center;
+      background: #f8eff5;
+      border-radius: 14px;
+    }
+
+    .reward strong {
+      display: block;
+      margin-top: 7px;
+    }
+
+    .footer {
+      margin-top: 28px;
+      text-align: center;
+      color: #887d89;
+      font-size: 12px;
+    }
+
+    .error {
+      text-align: center;
+      color: #887d89;
+      line-height: 1.6;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="card" id="customer-card" hidden>
+    <div class="brand">LPKARD</div>
+
+    <h1 id="business-name">Mi negocio</h1>
+    <p class="subtitle">MI TARJETA DE BENEFICIOS</p>
+
+    <div class="client">
+      <small>CLIENTE</small>
+      <h2 id="client-name">Nombre del cliente</h2>
+    </div>
+
+    <section class="section" id="points-section" hidden>
+      <small>MIS PUNTOS</small>
+      <div class="value" id="points-value"></div>
+      <div class="progress">
+        <div id="points-progress"></div>
+      </div>
+    </section>
+
+    <section class="section" id="visits-section" hidden>
+      <small>MIS VISITAS</small>
+      <div class="value" id="visits-value"></div>
+      <div class="progress">
+        <div id="visits-progress"></div>
+      </div>
+    </section>
+
+    <div class="reward">
+      <small>MI BENEFICIO</small>
+      <strong id="reward-name">Premio especial</strong>
+    </div>
+
+    <p class="footer">Tu fidelidad tiene recompensa.</p>
+  </main>
+
+  <main class="card error" id="error-message">
+    <div class="brand">LPKARD</div>
+    <h2>Mi tarjeta digital</h2>
+    <p>No encontramos los datos de tu tarjeta.</p>
+    <p>Escaneá nuevamente el QR que te proporcionó tu comercio.</p>
+  </main>
+
+  <script>
+    try {
+      const savedCard = localStorage.getItem("lpkard-customer-card");
+      const hash = location.hash.slice(1);
+
+      const card = hash
+        ? JSON.parse(decodeURIComponent(hash))
+        : savedCard ? JSON.parse(savedCard) : null;
+
+      if (
+        card &&
+        card.type === "LPKARD_CUSTOMER" &&
+        card.clientName &&
+        card.business
+      ) {
+        localStorage.setItem(
+          "lpkard-customer-card",
+          JSON.stringify(card)
+        );
+
+        document.getElementById("business-name").textContent = card.business;
+        document.getElementById("client-name").textContent = card.clientName;
+        document.getElementById("reward-name").textContent =
+          card.reward || "Premio especial";
+
+        if (card.pointsMode) {
+          document.getElementById("points-section").hidden = false;
+          document.getElementById("points-value").textContent =
+            `${card.points || 0} / ${card.pointsGoal || 0}`;
+
+          const pointsPercent = card.pointsGoal > 0
+            ? Math.min((card.points / card.pointsGoal) * 100, 100)
+            : 0;
+
+          document.getElementById("points-progress").style.width =
+            pointsPercent + "%";
+        }
+
+        if (card.visitsMode) {
+          document.getElementById("visits-section").hidden = false;
+          document.getElementById("visits-value").textContent =
+            `${card.visits || 0} / ${card.visitsGoal || 0}`;
+
+          const visitsPercent = card.visitsGoal > 0
+            ? Math.min((card.visits / card.visitsGoal) * 100, 100)
+            : 0;
+
+          document.getElementById("visits-progress").style.width =
+            visitsPercent + "%";
+        }
+
+        document.getElementById("error-message").hidden = true;
+        document.getElementById("customer-card").hidden = false;
+      }
+    } catch (error) {
+      console.error("No se pudo cargar la tarjeta:", error);
+    }
+  </script>
+</body>
+</html>

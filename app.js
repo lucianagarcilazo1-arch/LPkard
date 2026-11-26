@@ -181,11 +181,24 @@ function openLoyaltyCard(clientId) {
 const qrContainer = $("customer-qr-code");
 qrContainer.innerHTML = "";
 
+const customerCard = {
+  type: "LPKARD_CUSTOMER",
+  business: data.business,
+  clientName: client.name,
+  pointsMode,
+  visitsMode,
+  points,
+  pointsGoal,
+  visits,
+  visitsGoal,
+  reward: data.loyalty.reward || "Premio especial"
+};
+
+const customerUrl = new URL("cliente.html", window.location.href);
+customerUrl.hash = encodeURIComponent(JSON.stringify(customerCard));
+
 new QRCode(qrContainer, {
-  text: JSON.stringify({
-    type: "LPKARD_CUSTOMER",
-    clientId: client.id
-  }),
+  text: customerUrl.href,
   width: 180,
   height: 180,
   correctLevel: QRCode.CorrectLevel.H
@@ -455,13 +468,15 @@ $("appointments-list").addEventListener("click", event => {
   }
 
   const message =
-    `¡Hola, buen día ${client.name}! 👋
+  `¡Hola, ${client.name}! \u{1F44B}
 
 Te recordamos tu cita de ${appointment.service} para hoy a las ${appointment.time} en ${data.business}.
 
-💬 Respondé SÍ para confirmar o avisanos si necesitás cambiarla.
+\u{1F4AC} Respondé SÍ para confirmar o avisanos si necesitás cambiarla.
 
-¡Te esperamos! 😊`;
+¡Te esperamos! \u{1F60A}`;
+ 
+console.log(message);
 
   const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 
