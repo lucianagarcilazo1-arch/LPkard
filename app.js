@@ -258,12 +258,37 @@ function redeemPoints(clientId) {
   notify("¡Recompensa canjeada correctamente!");
 }
 function renderAppointments() {
-  const sorted = [...data.appointments].sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time));
-  $("appointments-list").innerHTML = sorted.length ? sorted.map(a => `
-    <article class="data-row">
-      <div><strong>${escapeHTML(clientName(a.clientId))}</strong><small>${escapeHTML(a.service)}</small><small class="appointment-date">${formatDate(a.date)} · ${escapeHTML(a.time)}</small></div>
-      <button class="delete-btn" data-delete-appointment="${a.id}">Cancelar turno</button>
-    </article>`).join("") : `<div class="empty">Todavía no hay turnos agendados.</div>`;
+  const sorted = [...data.appointments].sort((a,b) =>
+    (a.date+a.time).localeCompare(b.date+b.time)
+  );
+
+  $("appointments-list").innerHTML = sorted.length
+    ? sorted.map(a => `
+      <article class="data-row">
+        <div>
+          <strong>${escapeHTML(clientName(a.clientId))}</strong>
+          <small>${escapeHTML(a.service)}</small>
+          <small class="appointment-date">
+            ${formatDate(a.date)} · ${escapeHTML(a.time)}
+          </small>
+        </div>
+
+        <div class="appointment-actions">
+          <button
+            class="secondary"
+            data-reminder-appointment="${a.id}">
+            Enviar recordatorio
+          </button>
+
+          <button
+            class="delete-btn"
+            data-delete-appointment="${a.id}">
+            Cancelar turno
+          </button>
+        </div>
+      </article>
+    `).join("")
+    : `<div class="empty">Todavía no hay turnos agendados.</div>`;
 }
 function formatDate(date) {
   return new Date(date + "T12:00:00").toLocaleDateString("es-AR", {day:"2-digit",month:"short",year:"numeric"});
@@ -392,6 +417,49 @@ $("appointments-list").addEventListener("click", event => {
   if (!confirm("¿Cancelar este turno?")) return;
   data.appointments = data.appointments.filter(a => a.id !== button.dataset.deleteAppointment);
   saveData(); notify("Turno cancelado.");
+});
+$("appointments-list").addEventListener("click", event => {
+  const button = event.target.closest("[data-reminder-appointment]");
+  if (!button) return;
+
+  const appointment = data.appointments.find(
+    a => a.id === button.dataset.reminderAppointment
+  );
+
+  if (!appointment) return;
+
+  const client = data.clients.find(
+    c => c.id === appointment.clientId
+  );
+
+  if (!client) return notify("No se encontró el cliente.");
+
+  let phone = String(client.phone || "").replace(/\D/g, "");
+
+  if (phone.startsWith("549")) {
+    // Ya tiene el prefijo internacional de celular argentino.
+  } else if (phone.startsWith("54")) {
+    phone = "549" + phone.slice(2);
+  } else {
+    if (phone.startsWith("0")) phone = phone.slice(1);
+
+    if (phone.length !== 10) {
+      return notify("Revisá el teléfono: debe incluir característica y número completo.");
+    }
+
+    phone = "549" + phone;
+  }
+
+  if (phone.length !== 13) {
+    return notify("El número de celular no tiene el formato esperado.");
+  }
+
+  const message =
+    `Hola, ${client.name}. Te recordamos que hoy tenés tu turno en ${data.business} para ${appointment.service}, a las ${appointment.time}. ¡Te esperamos!`;
+
+  const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+
+  window.open(url, "_blank");
 });
 $("edit-business").addEventListener("click", () => {
   $("business-name").value = data.business;
